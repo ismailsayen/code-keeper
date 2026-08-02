@@ -1,2 +1,4 @@
 .vagrant/
 gitlab_root_password
+*.ova
+*.box
