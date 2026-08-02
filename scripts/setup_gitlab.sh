@@ -3,11 +3,23 @@
 set -e
 export DEBIAN_FRONTEND=noninteractive
 
-VM_IP="${VM_IP}"
+
 
 echo "==> Updating system packages..."
 apt-get update -y
 apt-get upgrade -y
+
+DETECTED_IP=$(ip -4 addr show scope global | grep -oP '(?<=inet\s)\d+(\.\d+){3}' | head -n 1)
+
+# Fallback to hostname if no valid IP detected
+VM_IP="${DETECTED_IP:-$(hostname -I | awk '{print $1}')}"
+
+if [ -z "${VM_IP}" ]; then
+  VM_IP="localhost"
+fi
+
+echo "==> Auto-detected VM IP: http://${VM_IP}"
+
 
 echo "==> Installing basic dependencies..."
 apt-get install -y curl openssh-server ca-certificates tzdata perl postfix ufw
@@ -36,7 +48,11 @@ if ! command -v gitlab-ctl >/dev/null 2>&1; then
   echo "==> Installing GitLab Community Edition..."
   EXTERNAL_URL="http://${VM_IP}" apt-get install -y gitlab-ce
 else
-  echo "==> GitLab is already installed."
+  echo "==> GitLab is already installed. Updating external_url..."
+  
+  # Update external_url in gitlab.rb to match current IP and reconfigure
+  sudo sed -i "s|^external_url .*|external_url 'http://${VM_IP}'|" /etc/gitlab/gitlab.rb
+  sudo gitlab-ctl reconfigure
 fi
 
 # -----------------------------------------------------------------

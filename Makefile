@@ -18,12 +18,10 @@ help:
 	@echo "  make ova       - Export VM into VirtualBox .ova file"
 	@echo "  make clean     - Stop VM, destroy state, and wipe build files"
 
-# Host Dependency Setup
 init:
 	@chmod +x scripts/install_deps.sh
 	@./scripts/install_deps.sh
 
-# Daily Lifecycle Management
 up:
 	@echo "==> Starting Virtual Machine..."
 	@vagrant up
