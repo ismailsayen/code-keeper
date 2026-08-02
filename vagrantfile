@@ -2,23 +2,30 @@
 # vi: set ft=ruby :
 
 Vagrant.configure("2") do |config|
-
+  # -------------------------------------------------------------------
+  # 1. Configuration Constants
+  # -------------------------------------------------------------------
   VM_NAME = "Code-Keeper-VM"
 
-  # config.ssh.insert_key = false
+  config.ssh.insert_key = false
 
-
+  # -------------------------------------------------------------------
+  # 2. Base Box & Network
+  # -------------------------------------------------------------------
   config.vm.box = "ubuntu/jammy64"
   config.vm.hostname = "code-keeper-server"
 
   config.vm.disk :disk, size: "50GB", name: "gitlab_storage"
 
-  # BRIDGED NETWORK: VM gets its own IP address directly from router
-  config.vm.network "public_network"
+  # BRIDGED NETWORK: Force VirtualBox to bridge directly to your host's eno2 interface
+  config.vm.network "public_network", bridge: "eno2"
 
+  # Keep SSH port forwarding for host access via `make ssh`
   config.vm.network "forwarded_port", guest: 22, host: 2222, id: "ssh", auto_correct: true
 
-
+  # -------------------------------------------------------------------
+  # 3. VirtualBox Provider Settings
+  # -------------------------------------------------------------------
   config.vm.provider "virtualbox" do |vb|
     vb.name   = VM_NAME
     vb.memory = "8192"
@@ -28,7 +35,9 @@ Vagrant.configure("2") do |config|
     vb.customize ["modifyvm", :id, "--ioapic", "on"]
   end
 
-
+  # -------------------------------------------------------------------
+  # 4. Script-Based Provisioning
+  # -------------------------------------------------------------------
   config.vm.provision "shell" do |s|
     s.path = "scripts/setup_gitlab.sh"
   end
