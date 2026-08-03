@@ -7,7 +7,7 @@ Vagrant.configure("2") do |config|
   # -------------------------------------------------------------------
   VM_NAME = "Code-Keeper-VM"
 
-  config.ssh.insert_key = false
+  # config.ssh.insert_key = false
 
   # -------------------------------------------------------------------
   # 2. Base Box & Network
@@ -17,11 +17,12 @@ Vagrant.configure("2") do |config|
 
   config.vm.disk :disk, size: "50GB", name: "gitlab_storage"
 
-  # BRIDGED NETWORK: Force VirtualBox to bridge directly to your host's eno2 interface
+  # BRIDGED NETWORK: Force VirtualBox to bridge directly to eno2 interface
   config.vm.network "public_network", bridge: "eno2"
 
   # Keep SSH port forwarding for host access via `make ssh`
   config.vm.network "forwarded_port", guest: 22, host: 2222, id: "ssh", auto_correct: true
+  config.vm.network "forwarded_port", guest: 80, host: 8080
 
   # -------------------------------------------------------------------
   # 3. VirtualBox Provider Settings
