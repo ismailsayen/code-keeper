@@ -38,16 +38,31 @@ case "$1" in
     ;;
 
   open)
-    "$0" up
-    echo "==> Opening GitLab in Chrome..."
-    google-chrome \
-      --user-data-dir="/tmp/chrome_tailscale_proxy" \
-      --proxy-server="socks5://127.0.0.1:1055" \
-      "http://${GITLAB_IP}" >/dev/null 2>&1 &
-    ;;
+      "$0" up
+      echo "==> Opening GitLab in Chrome from WSL..."
 
-  *)
-    echo "Usage: $0 {up|down|open}"
-    exit 1
-    ;;
+      # 1. Try Windows Chrome executable via cmd.exe (Standard WSL approach)
+      if command -v cmd.exe >/dev/null 2>&1; then
+        cmd.exe /c start chrome \
+          --user-data-dir="C:\Windows\Temp\chrome_tailscale_proxy" \
+          --proxy-server="socks5://127.0.0.1:1055" \
+          "http://${GITLAB_IP}" >/dev/null 2>&1 &
+
+      # 2. Fallback for native Linux Chrome desktop
+      elif command -v google-chrome >/dev/null 2>&1; then
+        google-chrome \
+          --user-data-dir="/tmp/chrome_tailscale_proxy" \
+          --proxy-server="socks5://127.0.0.1:1055" \
+          "http://${GITLAB_IP}" >/dev/null 2>&1 &
+      else
+        echo "==> Error: Could not launch Chrome!"
+        exit 1
+      fi
+      ;;
+
+    *)
+      echo "Usage: $0 {up|down|open}"
+      exit 1
+      ;;
+
 esac
