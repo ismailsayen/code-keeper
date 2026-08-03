@@ -30,12 +30,12 @@ case "$1" in
       tailscale/tailscale:latest >/dev/null
 
     echo "==> Proxy running on 127.0.0.1:1055"
-    ;;
+  ;;
 
   down)
     echo "==> Stopping Tailscale Proxy..."
     docker rm -f "$CONTAINER_NAME" >/dev/null 2>&1 || true
-    ;;
+  ;;
 
   open)
       "$0" up
@@ -58,11 +58,11 @@ case "$1" in
         echo "==> Error: Could not launch Chrome!"
         exit 1
       fi
-      ;;
+    ;;
 
-    *)
-      echo "Usage: $0 {up|down|open}"
-      exit 1
-      ;;
+  *)
+    echo "Usage: $0 {up|down|open}"
+    exit 1
+  ;;
 
 esac
