@@ -3,3 +3,4 @@ gitlab_root_password
 *.ova
 *.box
 .private_key
+.tailscale_key

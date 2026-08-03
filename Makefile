@@ -1,7 +1,8 @@
 DIR     := $(shell pwd)
 VM_NAME := "Code-Keeper-VM"
+CONTAINER_NAME="tailscale-proxy"
 
-.PHONY: help init up ssh halt status reload provision pass vbox ova clean
+.PHONY: help init up ssh halt status reload provision pass vbox ova clean proxy-up
 
 # Default help display
 help:
@@ -21,6 +22,8 @@ help:
 init:
 	@chmod +x scripts/install_deps.sh
 	@./scripts/install_deps.sh
+	@chmod +x scripts/install_docker_rootless.sh 
+	@./scripts/install_docker_rootless.sh 
 
 up:
 	@echo "==> Starting Virtual Machine..."
@@ -55,6 +58,15 @@ vbox:
 ova:
 	@chmod +x scripts/export_ova.sh
 	@./scripts/export_ova.sh $(VM_NAME)
+
+proxy-up:
+	@./scripts/proxy.sh up
+
+proxy-down:
+	@./scripts/proxy.sh down
+
+open-gitlab:
+	@./scripts/proxy.sh open
 
 # Cleanup
 clean:
