@@ -4,3 +4,4 @@ gitlab_root_password
 *.box
 .private_key
 .tailscale_key
+.vault_pass

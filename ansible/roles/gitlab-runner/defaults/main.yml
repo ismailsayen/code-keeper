@@ -11,13 +11,8 @@ gitlab_runner_config_volume: gitlab-runner-config
 
 gitlab_runner_docker_socket: /var/run/docker.sock
 
-gitlab_runner_token: ""
-
 gitlab_url: "http://{{ vm_private_ip }}"
 
 gitlab_runner_tags: "docker"
 
 gitlab_runner_executor: "docker"
-
-
-

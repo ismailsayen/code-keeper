@@ -14,6 +14,15 @@
       - "{{ gitlab_runner_config_volume }}:/etc/gitlab-runner"
       - "{{ gitlab_runner_docker_socket }}:/var/run/docker.sock"
 
+- name: Ensure GitLab Runner token is provided
+  assert:
+    that:
+      - gitlab_runner_token is defined
+      - gitlab_runner_token | length > 0
+    fail_msg: >
+      gitlab_runner_token is missing.
+      Store it in ansible/group_vars/vault.yml.
+
 - name: Register GitLab Runner
   command: >
     docker exec {{ gitlab_runner_container_name }}
@@ -24,4 +33,3 @@
     --executor {{ gitlab_runner_executor }}
     --docker-image {{ gitlab_runner_image }}
     --description {{ gitlab_runner_name }}
-    --tag-list {{ gitlab_runner_tags }}
