@@ -1,0 +1,13 @@
+---
+- name: Add GitLab repository
+  shell: |
+    curl -fsSL https://packages.gitlab.com/install/repositories/gitlab/gitlab-ce/script.deb.sh | bash
+  args:
+    creates: /etc/apt/sources.list.d/gitlab_gitlab-ce.list
+
+- name: Install GitLab CE
+  apt:
+    name: gitlab-ce
+    state: present
+  environment:
+    EXTERNAL_URL: "{{ gitlab_external_url }}"

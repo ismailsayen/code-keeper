@@ -1,11 +1,9 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+VM_PRIVATE_IP = "192.168.56.10"
+
 Vagrant.configure("2") do |config|
-  # Prevents 'vagrant destroy' from executing without explicit confirmation
-  # config.vm.define "code-keeper-server" do |server|
-  #   server.vm.prevent_destroy = true
-  # end
 
   config.vm.box = "ubuntu/jammy64"
   config.vm.hostname = "code-keeper-server"
@@ -13,9 +11,12 @@ Vagrant.configure("2") do |config|
   # 50GB storage for GitLab
   config.vm.disk :disk, size: "50GB", name: "gitlab_storage"
 
-  # Standard NAT + Forwarded ports
+  # NAT + Forwarded ports
   config.vm.network "forwarded_port", guest: 22, host: 2222, id: "ssh", auto_correct: true
   config.vm.network "forwarded_port", guest: 80, host: 8080
+
+  # Private Network
+  config.vm.network "private_network", ip: VM_PRIVATE_IP
 
   config.vm.provider "virtualbox" do |vb|
     vb.name   = "Code-Keeper-VM"
@@ -23,7 +24,6 @@ Vagrant.configure("2") do |config|
     vb.cpus   = 4
   end
 
-  # Ansible Local Provisioner (Installs Ansible inside the VM)
   config.vm.provision "ansible_local" do |ansible|
     ansible.playbook = "ansible/playbook.yml"
   end
