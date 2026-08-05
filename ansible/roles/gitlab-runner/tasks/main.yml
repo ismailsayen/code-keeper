@@ -3,6 +3,19 @@
   community.docker.docker_volume:
     name: "{{ gitlab_runner_config_volume }}"
 
+- name: Create GitLab Runner template directory
+  file:
+    path: /tmp/gitlab-runner
+    state: directory
+    mode: "0755"
+
+
+- name: Copy Runner configuration template
+  template:
+    src: config.template.toml.j2
+    dest: /tmp/gitlab-runner/config.template.toml
+    mode: "0644"
+
 - name: Start GitLab Runner container
   community.docker.docker_container:
     name: "{{ gitlab_runner_container_name }}"
@@ -12,7 +25,10 @@
 
     volumes:
       - "{{ gitlab_runner_config_volume }}:/etc/gitlab-runner"
+
       - "{{ gitlab_runner_docker_socket }}:/var/run/docker.sock"
+
+      - "/tmp/gitlab-runner:/tmp/gitlab-runner"
 
 - name: Ensure GitLab Runner token is provided
   assert:
@@ -21,7 +37,7 @@
       - gitlab_runner_token | length > 0
     fail_msg: >
       gitlab_runner_token is missing.
-      Store it in ansible/group_vars/vault.yml.
+      Store it inside ansible/group_vars/vault.yml.
 
 - name: Check if GitLab Runner is already registered
   command:
@@ -29,32 +45,29 @@
       - docker
       - exec
       - "{{ gitlab_runner_container_name }}"
-      - test
-      - -f
+      - grep
+      - -q
+      - "\\[\\[runners\\]\\]"
       - /etc/gitlab-runner/config.toml
+
   register: runner_config
+
   changed_when: false
+
   failed_when: false
 
-
 - name: Register GitLab Runner
-  command:
-    argv:
-      - docker
-      - exec
-      - "{{ gitlab_runner_container_name }}"
-      - gitlab-runner
-      - register
-      - --non-interactive
-      - --url
-      - "{{ gitlab_url }}"
-      - --token
-      - "{{ gitlab_runner_token }}"
-      - --executor
-      - "{{ gitlab_runner_executor }}"
-      - --docker-image
-      - "{{ gitlab_runner_image }}"
-      - --description
-      - "{{ gitlab_runner_name }}"
+  command: >
+    docker exec {{ gitlab_runner_container_name }}
+    gitlab-runner register
+    --non-interactive
+    --url {{ gitlab_url }}
+    --token {{ gitlab_runner_token }}
+    --executor {{ gitlab_runner_executor }}
+    --docker-image {{ gitlab_runner_image }}
+    --description {{ gitlab_runner_name }}
+    --template-config /tmp/gitlab-runner/config.template.toml
+
   when: runner_config.rc != 0
+
   no_log: true
