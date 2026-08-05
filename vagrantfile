@@ -2,6 +2,11 @@
 # vi: set ft=ruby :
 
 Vagrant.configure("2") do |config|
+  # Prevents 'vagrant destroy' from executing without explicit confirmation
+  # config.vm.define "code-keeper-server" do |server|
+  #   server.vm.prevent_destroy = true
+  # end
+
   config.vm.box = "ubuntu/jammy64"
   config.vm.hostname = "code-keeper-server"
 

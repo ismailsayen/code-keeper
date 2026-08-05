@@ -2,7 +2,7 @@ DIR     := $(shell pwd)
 VM_NAME := "Code-Keeper-VM"
 CONTAINER_NAME="tailscale-proxy"
 
-.PHONY: help init up ssh halt status reload provision pass vbox ova clean proxy-up
+.PHONY: help init up ssh halt status reload provision pass vbox ova clean proxy-up snapshot
 
 # Default help display
 help:
@@ -67,6 +67,10 @@ proxy-down:
 
 open-gitlab:
 	@./scripts/proxy.sh open
+
+snapshot:
+	@echo "==> Creating VirtualBox snapshot..."
+	@VBoxManage snapshot "Code-Keeper-VM" take "GitLab-Configured-State" --description "Working GitLab CE and Tailscale setup" || true
 
 # Cleanup
 clean:
