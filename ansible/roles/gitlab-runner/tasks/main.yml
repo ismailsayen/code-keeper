@@ -23,13 +23,38 @@
       gitlab_runner_token is missing.
       Store it in ansible/group_vars/vault.yml.
 
+- name: Check if GitLab Runner is already registered
+  command:
+    argv:
+      - docker
+      - exec
+      - "{{ gitlab_runner_container_name }}"
+      - test
+      - -f
+      - /etc/gitlab-runner/config.toml
+  register: runner_config
+  changed_when: false
+  failed_when: false
+
+
 - name: Register GitLab Runner
-  command: >
-    docker exec {{ gitlab_runner_container_name }}
-    gitlab-runner register
-    --non-interactive
-    --url {{ gitlab_url }}
-    --token {{ gitlab_runner_token }}
-    --executor {{ gitlab_runner_executor }}
-    --docker-image {{ gitlab_runner_image }}
-    --description {{ gitlab_runner_name }}
+  command:
+    argv:
+      - docker
+      - exec
+      - "{{ gitlab_runner_container_name }}"
+      - gitlab-runner
+      - register
+      - --non-interactive
+      - --url
+      - "{{ gitlab_url }}"
+      - --token
+      - "{{ gitlab_runner_token }}"
+      - --executor
+      - "{{ gitlab_runner_executor }}"
+      - --docker-image
+      - "{{ gitlab_runner_image }}"
+      - --description
+      - "{{ gitlab_runner_name }}"
+  when: runner_config.rc != 0
+  no_log: true
