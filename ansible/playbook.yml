@@ -1,71 +1,12 @@
 ---
-- name: Deploy GitLab Instance
+- name: Install GitLab
   hosts: all
   become: true
+  roles:
+    - role: gitlab_install
 
-  tasks:
-    # -----------------------------------------------------------------
-    # 1. System Dependencies & Swap Space
-    # -----------------------------------------------------------------
-    - name: Install basic utilities
-      apt:
-        name: [curl, ca-certificates, tzdata, ufw, postfix]
-        state: present
-        update_cache: yes
-
-    - name: Create 4GB Swapfile
-      command: fallocate -l 4G /swapfile
-      args:
-        creates: /swapfile
-
-    - name: Set swapfile permissions & enable
-      shell: |
-        chmod 600 /swapfile
-        mkswap /swapfile
-        swapon /swapfile
-        echo '/swapfile none swap sw 0 0' >> /etc/fstab
-      args:
-        creates: /etc/fstab.swap_configured
-
-    # -----------------------------------------------------------------
-    # 2. GitLab CE Installation
-    # -----------------------------------------------------------------
-    - name: Add GitLab repository
-      shell: curl -fsSL https://packages.gitlab.com/install/repositories/gitlab/gitlab-ce/script.deb.sh | bash
-      args:
-        creates: /etc/apt/sources.list.d/gitlab_gitlab-ce.list
-
-    - name: Install GitLab CE
-      apt:
-        name: gitlab-ce
-        state: present
-      environment:
-        EXTERNAL_URL: "http://0.0.0.0"
-
-    # -----------------------------------------------------------------
-    # 3. Tailscale Installation & Engine
-    # -----------------------------------------------------------------
-    - name: Install Tailscale
-      shell: curl -fsSL https://tailscale.com/install.sh | sh
-      args:
-        creates: /usr/bin/tailscale
-
-    - name: Enable Tailscale service
-      systemd:
-        name: tailscaled
-        enabled: yes
-        state: started
-
-    # -----------------------------------------------------------------
-    # 4. Firewall Setup
-    # -----------------------------------------------------------------
-    - name: Allow essential firewall ports
-      ufw:
-        rule: allow
-        port: "{{ item }}"
-        proto: tcp
-      loop: ['22', '80', '443']
-
-    - name: Enable Firewall
-      ufw:
-        state: enabled
+- name: Get GitLab Credentials
+  hosts: all
+  become: true
+  roles:
+    - role: gitlab_info

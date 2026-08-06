@@ -1,82 +1,59 @@
-DIR     := $(shell pwd)
-VM_NAME := "Code-Keeper-VM"
-CONTAINER_NAME="tailscale-proxy"
+# Executable names
+VAGRANT = vagrant
+ANSIBLE_PLAYBOOK = ansible-playbook
+ANSIBLE_PING = ansible
 
-.PHONY: help init up ssh halt status reload provision pass vbox ova clean proxy-up snapshot
+# File paths
+INVENTORY = ansible/hosts.ini
+PLAYBOOK = ansible/playbook.yml
 
-# Default help display
+.PHONY: help up destroy halt provision status rebuild restart ping apply ssh
+
+# Default target: display help
 help:
+	@echo "Usage: make [command]"
+	@echo ""
 	@echo "Available commands:"
-	@echo "  make init      - Install host dependencies (Vagrant, VirtualBox)"
-	@echo "  make up        - Boot up the VM (runs provisioning on first boot)"
-	@echo "  make ssh       - Open terminal session inside the VM"
-	@echo "  make pass      - Retrieve temporary GitLab root password"
-	@echo "  make status    - Check VM status"
-	@echo "  make halt      - Stop the VM gracefully"
-	@echo "  make reload    - Restart the VM (applies network/Vagrantfile changes)"
-	@echo "  make provision - Re-run shell scripts on the running VM"
-	@echo "  make vbox      - Export VM into reusable Vagrant .box"
-	@echo "  make ova       - Export VM into VirtualBox .ova file"
-	@echo "  make clean     - Stop VM, destroy state, and wipe build files"
-
-init:
-	@chmod +x scripts/install_deps.sh
-	@./scripts/install_deps.sh
-	@chmod +x scripts/install_docker_rootless.sh 
-	@./scripts/install_docker_rootless.sh 
+	@echo "  make up        : Start and provision the VM(s)"
+	@echo "  make halt      : Gracefully shut down the VM(s)"
+	@echo "  make destroy   : Forcefully delete the VM(s) without confirmation"
+	@echo "  make provision : Re-run provisioning scripts"
+	@echo "  make rebuild   : Destroy and recreate the VM(s) from scratch"
+	@echo "  make status    : Show current state of the VM(s)"
+	@echo "  make ping      : Test SSH connection to the VM using Ansible ping"
+	@echo "  make apply     : Run ansible-playbook directly from host machine"
 
 up:
-	@echo "==> Starting Virtual Machine..."
-	@vagrant up
+	@echo "🚀 Starting Vagrant environment..."
+	$(VAGRANT) up
 
-ssh:
-	@vagrant ssh
-
-pass:
-	@chmod +x scripts/get_password.sh
-	@./scripts/get_password.sh
-
-status:
-	@vagrant status
+destroy:
+	@echo "⚠️  Destroying virtual machine..."
+	$(VAGRANT) destroy -f
 
 halt:
-	@echo "==> Stopping Virtual Machine..."
-	@vagrant halt
-
-reload:
-	@echo "==> Reloading Virtual Machine..."
-	@vagrant reload
+	@echo "🛑 Stopping virtual machine..."
+	$(VAGRANT) halt
 
 provision:
-	@echo "==> Re-running setup script..."
-	@vagrant provision
+	@echo "⚙️  Running provisioners..."
+	$(VAGRANT) provision
 
-vbox:
-	@chmod +x scripts/export_vbox.sh
-	@./scripts/export_vbox.sh $(VM_NAME)
+status:
+	$(VAGRANT) status
 
-ova:
-	@chmod +x scripts/export_ova.sh
-	@./scripts/export_ova.sh $(VM_NAME)
+ssh:
+	@echo "🔑 Connecting to the virtual machine via SSH..."
+	$(VAGRANT) ssh
 
-proxy-up:
-	@./scripts/proxy.sh up
+ping:
+	@echo "📡 Testing Ansible SSH connectivity..."
+	$(ANSIBLE_PING) all -i $(INVENTORY) -m ping
 
-proxy-down:
-	@./scripts/proxy.sh down
+apply:
+	@echo "🚀 Executing Ansible playbook on target VM..."
+	$(ANSIBLE_PLAYBOOK) -i $(INVENTORY) $(PLAYBOOK) --ask-vault-pass
 
-open-gitlab:
-	@./scripts/proxy.sh open
+rebuild: destroy up
 
-snapshot:
-	@echo "==> Creating VirtualBox snapshot..."
-	@VBoxManage snapshot "Code-Keeper-VM" take "GitLab-Configured-State" --description "Working GitLab CE and Tailscale setup" || true
-
-# Cleanup
-clean:
-	@echo "==> Stopping and destroying Vagrant VM..."
-	@vagrant halt 2>/dev/null || true
-	@vagrant destroy -f 2>/dev/null || true
-	@echo "==> Removing temporary build artifacts and exports..."
-	@rm -rf *.box *.ova .vagrant/
-	@echo "==> Host workspace cleaned."
+restart: halt up
