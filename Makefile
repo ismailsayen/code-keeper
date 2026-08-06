@@ -83,7 +83,7 @@ open-gitlab:
 deploy:
 	@echo "==> Connecting VM to Tailscale..."
 	@vagrant ssh -c "sudo tailscale up"
-# Cleanup
+
 clean:
 	@echo "==> Stopping and destroying Vagrant VM..."
 	@vagrant halt 2>/dev/null || true
