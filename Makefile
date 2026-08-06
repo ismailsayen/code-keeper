@@ -2,6 +2,11 @@ DIR     := $(shell pwd)
 VM_NAME := "Code-Keeper-VM"
 CONTAINER_NAME="tailscale-proxy"
 
+TAILSCALE_PROXY := 127.0.0.1:1055
+TAILSCALE_HOST  := 100.126.18.79
+SSH_USER        := vagrant
+SSH_KEY         := .vagrant/machines/default/virtualbox/private_key
+
 .PHONY: help init up ssh halt status reload provision pass vbox ova clean proxy-up snapshot
 
 # Default help display
@@ -31,6 +36,13 @@ up:
 
 ssh:
 	@vagrant ssh
+
+ssh2:
+	@echo "==> Connecting to $(TAILSCALE_HOST) via Tailscale..."
+	@ssh \
+		-i "$(SSH_KEY)" \
+		-o ProxyCommand="nc -X 5 -x $(TAILSCALE_PROXY) %h %p" \
+		$(SSH_USER)@$(TAILSCALE_HOST)
 
 pass:
 	@chmod +x scripts/get_password.sh
