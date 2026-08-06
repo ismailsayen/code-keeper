@@ -9,4 +9,4 @@
     - tailscale
     - firewall
     - docker
-    - gitlab-runner
+    - gitlab_runner

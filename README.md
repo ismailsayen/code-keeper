@@ -34,7 +34,7 @@
 ✅ Communication between GitLab and the Runner
 
 
-
+---
 
 Infrastructure
 ──────────────────────────────
@@ -61,3 +61,32 @@ Cloud Migration
 ⬜ Move Runner
 ⬜ TLS
 ⬜ Domain
+
+ ---
+
+What do companies usually use?
+
+A modern pipeline often looks like:
+
+Git Push
+     │
+     ▼
+Unit Tests
+     │
+     ▼
+Static Code Analysis (SonarQube)
+     │
+     ▼
+Dependency Scan (Snyk / Trivy)
+     │
+     ▼
+Docker Build
+     │
+     ▼
+Container Scan (Trivy)
+     │
+     ▼
+Push Image
+     │
+     ▼
+Deploy
