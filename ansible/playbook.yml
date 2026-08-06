@@ -10,3 +10,4 @@
     - firewall
     - docker
     - gitlab_runner
+    - SonarQube

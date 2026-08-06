@@ -1,2 +1,20 @@
 ---
-# defaults file for ansible/roles/SonarQube
+docker_network: code-keeper
+
+sonarqube_container_name: sonarqube
+sonarqube_image: sonarqube:lts-community
+
+sonarqube_port: 9000
+
+sonarqube_volume: sonarqube-data
+
+postgres_container_name: sonarqube-postgres
+postgres_image: postgres:17
+
+postgres_volume: sonarqube-postgres-data
+
+postgres_db: "{{ vault_sonarqube_postgres.db }}"
+postgres_user: "{{ vault_sonarqube_postgres.user }}"
+postgres_password: "{{ vault_sonarqube_postgres.password }}"
+
+postgres_port: 5432

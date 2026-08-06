@@ -16,3 +16,5 @@ gitlab_url: "http://{{ vm_private_ip }}"
 gitlab_runner_tags: "docker"
 
 gitlab_runner_executor: "docker"
+
+docker_network: code-keeper

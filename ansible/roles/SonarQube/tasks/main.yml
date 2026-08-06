@@ -1,2 +1,76 @@
 ---
-# tasks file for ansible/roles/SonarQube
+- name: Create SonarQube volume
+  community.docker.docker_volume:
+    name: "{{ sonarqube_volume }}"
+
+- name: Create PostgreSQL volume
+  community.docker.docker_volume:
+    name: "{{ postgres_volume }}"
+
+
+- name: Start PostgreSQL
+  community.docker.docker_container:
+    name: "{{ postgres_container_name }}"
+    image: "{{ postgres_image }}"
+    restart_policy: unless-stopped
+    state: started
+
+    env:
+      POSTGRES_DB: "{{ postgres_db }}"
+      POSTGRES_USER: "{{ postgres_user }}"
+      POSTGRES_PASSWORD: "{{ postgres_password }}"
+
+    volumes:
+      - "{{ postgres_volume }}:/var/lib/postgresql/data"
+
+    networks:
+      - name: "{{ docker_network }}"
+
+- name: Wait for PostgreSQL
+  community.docker.docker_container_exec:
+    container: "{{ postgres_container_name }}"
+    command: pg_isready -U {{ postgres_user }}
+  register: pg_ready
+  retries: 20
+  delay: 5
+  until: pg_ready.rc == 0
+
+- name: Configure vm.max_map_count for Elasticsearch
+  ansible.posix.sysctl:
+    name: vm.max_map_count
+    value: "524288"
+    state: present
+    reload: true
+
+- name: Start SonarQube
+  community.docker.docker_container:
+    name: "{{ sonarqube_container_name }}"
+    image: "{{ sonarqube_image }}"
+    restart_policy: unless-stopped
+    state: started
+
+    ports:
+      - "{{ sonarqube_port }}:{{ sonarqube_port }}"
+
+    volumes:
+      - "{{ sonarqube_volume }}:/opt/sonarqube/data"
+
+    env:
+      SONAR_JDBC_URL: "jdbc:postgresql://{{ postgres_container_name }}:{{ postgres_port }}/{{ postgres_db }}"
+      SONAR_JDBC_USERNAME: "{{ postgres_user }}"
+      SONAR_JDBC_PASSWORD: "{{ postgres_password }}"
+
+    networks:
+      - name: "{{ docker_network }}"
+
+
+- name: Wait for SonarQube API
+  uri:
+    url: http://localhost:9000/api/system/status
+    method: GET
+    return_content: true
+    status_code: 200
+  register: sonar_status
+  retries: 60
+  delay: 10
+  until: sonar_status.status == 200

@@ -52,3 +52,9 @@
     name: docker
     enabled: yes
     state: started
+
+
+- name: Create Code Keeper Docker network
+  community.docker.docker_network:
+    name: "{{docker_network}}"
+    state: present

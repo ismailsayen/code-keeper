@@ -29,6 +29,8 @@
       - "{{ gitlab_runner_docker_socket }}:/var/run/docker.sock"
 
       - "/tmp/gitlab-runner:/tmp/gitlab-runner"
+    networks:
+      - name: "{{ docker_network }}"
 
 - name: Ensure GitLab Runner token is provided
   assert:

@@ -1,6 +1,7 @@
 [[runners]]
 
 [runners.docker]
+  network_mode = "{{ docker_network }}"
   image = "{{ gitlab_runner_image }}"
   privileged = false
   volumes = [
