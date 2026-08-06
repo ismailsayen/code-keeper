@@ -28,7 +28,9 @@ init:
 	@chmod +x scripts/install_deps.sh
 	@./scripts/install_deps.sh
 	@chmod +x scripts/install_docker_rootless.sh 
-	@./scripts/install_docker_rootless.sh 
+	@./scripts/install_docker_rootless.sh
+	@chmod +x scripts/missing-files.sh
+	@./scripts/missing-files.sh
 
 up:
 	@echo "==> Starting Virtual Machine..."
