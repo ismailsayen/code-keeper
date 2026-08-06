@@ -3,7 +3,7 @@ set -e
 
 CONTAINER_NAME="tailscale-proxy"
 KEY_FILE=".tailscale_key"
-GITLAB_IP="100.110.28.100"
+GITLAB_IP="100.126.18.79"
 
 case "$1" in
   up)

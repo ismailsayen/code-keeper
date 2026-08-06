@@ -68,10 +68,9 @@ proxy-down:
 open-gitlab:
 	@./scripts/proxy.sh open
 
-snapshot:
-	@echo "==> Creating VirtualBox snapshot..."
-	@VBoxManage snapshot "Code-Keeper-VM" take "GitLab-Configured-State" --description "Working GitLab CE and Tailscale setup" || true
-
+deploy:
+	@echo "==> Connecting VM to Tailscale..."
+	@vagrant ssh -c "sudo tailscale up"
 # Cleanup
 clean:
 	@echo "==> Stopping and destroying Vagrant VM..."
