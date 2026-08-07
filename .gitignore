@@ -6,3 +6,4 @@ gitlab_root_password
 .tailscale_key
 .vault_pass
 .env
+ansible-venv
