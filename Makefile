@@ -1,8 +1,3 @@
-# ============================================================
-# Code-Keeper Makefile
-# ============================================================
-
-# Load environment configuration
 ifneq (,$(wildcard .env))
 include .env
 export
@@ -48,8 +43,12 @@ stop:
 	@echo "==> Stopping toolbox..."
 	@docker rm -f "$(CONTAINER_NAME)" >/dev/null 2>&1 || true
 
-
-
+ssh:
+	@echo "==> Connecting to $(CODE_KEEPER_USER)@$(CODE_KEEPER_HOST) through Tailscale..."
+	ssh \
+		-i "$(SSH_KEY)" \
+		-o ProxyCommand="nc -X 5 -x $(TAILSCALE_PROXY) %h %p" \
+		$(CODE_KEEPER_USER)@$(CODE_KEEPER_HOST)
 
 ping:
 	@echo "==> Testing remote Ansible connectivity..."
