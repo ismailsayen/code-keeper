@@ -3,9 +3,8 @@
   hosts: all
   become: true
   roles:
-    - role: commons
+    - role: common
     - role: gitlab
     - role: gitlab_users
     - role: docker
     - role: tailscale
-

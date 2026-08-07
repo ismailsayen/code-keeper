@@ -15,4 +15,4 @@
     confirm: false                 
     reset_password: false          
   loop: "{{ gitlab_users_list }}"
-  no_log: true                    
+  no_log: false                   
