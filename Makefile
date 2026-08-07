@@ -1,59 +1,73 @@
-# Executable names
-VAGRANT = vagrant
-ANSIBLE_PLAYBOOK = ansible-playbook
-ANSIBLE_PING = ansible
+ifneq (,$(wildcard .env))
+include .env
+export
+endif
 
-# File paths
-INVENTORY = ansible/hosts.ini
-PLAYBOOK = ansible/playbook.yml
+IMAGE_NAME ?= code-keeper-toolbox
+CONTAINER_NAME ?= code-keeper-toolbox
 
-.PHONY: help up destroy halt provision status rebuild restart ping apply ssh
 
-# Default target: display help
-help:
-	@echo "Usage: make [command]"
-	@echo ""
-	@echo "Available commands:"
-	@echo "  make up        : Start and provision the VM(s)"
-	@echo "  make halt      : Gracefully shut down the VM(s)"
-	@echo "  make destroy   : Forcefully delete the VM(s) without confirmation"
-	@echo "  make provision : Re-run provisioning scripts"
-	@echo "  make rebuild   : Destroy and recreate the VM(s) from scratch"
-	@echo "  make status    : Show current state of the VM(s)"
-	@echo "  make ping      : Test SSH connection to the VM using Ansible ping"
-	@echo "  make apply     : Run ansible-playbook directly from host machine"
+.PHONY: init build start stop  ping provision  clean
 
-up:
-	@echo "🚀 Starting Vagrant environment..."
-	$(VAGRANT) up
+init:
+	@chmod +x scripts/install_docker_rootless.sh
+	@./scripts/install_docker_rootless.sh
 
-destroy:
-	@echo "⚠️  Destroying virtual machine..."
-	$(VAGRANT) destroy -f
+build:
+	@echo "==> Building toolbox..."
+	@docker build -t "$(IMAGE_NAME)" .
 
-halt:
-	@echo "🛑 Stopping virtual machine..."
-	$(VAGRANT) halt
 
-provision:
-	@echo "⚙️  Running provisioners..."
-	$(VAGRANT) provision
+start:
+	@echo "==> Starting toolbox..."
 
-status:
-	$(VAGRANT) status
+	@if docker ps --format '{{.Names}}' | grep -q "^$(CONTAINER_NAME)$$"; then \
+		echo "==> Toolbox is already running."; \
+	else \
+		docker rm -f "$(CONTAINER_NAME)" >/dev/null 2>&1 || true; \
+		docker run -d \
+			--name "$(CONTAINER_NAME)" \
+			--env-file .env \
+			-p $(TAILSCALE_PROXY):$(PROXY_PORT) \
+			-v "$(PWD):/workspace" \
+			-w /workspace \
+			"$(IMAGE_NAME)"; \
+		echo "==> Toolbox started."; \
+	fi
+	@echo "==> Entering toolbox..."
+	@docker exec -it "$(CONTAINER_NAME)" bash
+
+
+stop:
+	@echo "==> Stopping toolbox..."
+	@docker rm -f "$(CONTAINER_NAME)" >/dev/null 2>&1 || true
 
 ssh:
-	@echo "🔑 Connecting to the virtual machine via SSH..."
-	$(VAGRANT) ssh
+	@echo "==> Connecting to $(CODE_KEEPER_USER)@$(CODE_KEEPER_HOST) through Tailscale..."
+	ssh \
+		-i "$(SSH_KEY)" \
+		-o ProxyCommand="nc -X 5 -x $(TAILSCALE_PROXY) %h %p" \
+		$(CODE_KEEPER_USER)@$(CODE_KEEPER_HOST)
 
 ping:
-	@echo "📡 Testing Ansible SSH connectivity..."
-	$(ANSIBLE_PING) all -i $(INVENTORY) -m ping
+	@echo "==> Testing remote Ansible connectivity..."
+	@ansible all -m ping --vault-password-file=.vault_pass
 
-apply:
-	@echo "🚀 Executing Ansible playbook on target VM..."
-	$(ANSIBLE_PLAYBOOK) -i $(INVENTORY) $(PLAYBOOK) --ask-vault-pass
 
-rebuild: destroy up
+provision:
+	@echo "==> Provisioning remote VM..."
+	@ansible-playbook ansible/playbook.yml --vault-password-file=.vault_pass
 
-restart: halt up
+gitlab:
+	@chmod +x scripts/open-gitlab.sh
+	@./scripts/open-gitlab.sh
+
+
+clean:
+
+	@echo "==> Removing toolbox..."
+	@docker rm -f "$(CONTAINER_NAME)" 2>/dev/null || true
+
+	@docker rmi  "$(IMAGE_NAME)" 2>/dev/null || true
+
+	@echo "==> Cleanup complete."

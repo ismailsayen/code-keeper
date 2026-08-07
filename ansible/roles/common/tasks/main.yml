@@ -1,0 +1,26 @@
+---
+- name: Install basic utilities
+  apt:
+    name:
+      - curl
+      - ca-certificates
+      - tzdata
+      - ufw
+      - postfix
+    state: present
+    update_cache: yes
+
+- name: Create 4GB Swapfile
+  command: fallocate -l 4G /swapfile
+  args:
+    creates: /swapfile
+
+- name: Configure swapfile
+  shell: |
+    chmod 600 /swapfile
+    mkswap /swapfile
+    swapon /swapfile
+
+    if ! grep -q "^/swapfile" /etc/fstab; then
+      echo "/swapfile none swap sw 0 0" >> /etc/fstab
+    fi

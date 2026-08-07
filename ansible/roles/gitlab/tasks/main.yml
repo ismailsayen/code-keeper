@@ -1,5 +1,5 @@
 ---
-# tasks file for /vagrant/ansible/roles/gitlab
+# tasks file for /ansible/roles/gitlab
 
 - name: Download GitLab repository installation script
   ansible.builtin.get_url:
