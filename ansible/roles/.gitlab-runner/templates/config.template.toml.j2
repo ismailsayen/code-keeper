@@ -1,9 +1,0 @@
-[[runners]]
-
-[runners.docker]
-  image = "{{ gitlab_runner_image }}"
-  privileged = false
-  volumes = [
-    "/cache",
-    "/var/run/docker.sock:/var/run/docker.sock"
-  ]
