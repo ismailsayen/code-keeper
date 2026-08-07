@@ -1,27 +1,6 @@
 ---
 # tasks file for /vagrant/ansible/roles/gitlab
 
-- name: Install required dependencies
-  ansible.builtin.apt:
-    name:
-      - curl
-      - openssh-server
-      - ca-certificates
-      - tzdata
-      - postfix
-    state: present
-    update_cache: yes
-
-- name: Allow HTTP, HTTPS, and SSH traffic with UFW
-  community.general.ufw:
-    rule: allow
-    port: "{{ item }}"
-    proto: tcp
-  loop:
-    - "80"
-    - "443"
-    - "22"
-
 - name: Download GitLab repository installation script
   ansible.builtin.get_url:
     url: https://packages.gitlab.com/install/repositories/gitlab/gitlab-ce/script.deb.sh
@@ -38,6 +17,24 @@
     name: gitlab-ce
     state: present
     update_cache: yes
+
+- name: Generate the token only if it does not already exist.
+  ansible.builtin.command: >
+    gitlab-rails runner "
+      user = User.find_by(username: 'root');
+      unless user.personal_access_tokens.exists?(name: 'Ansible Admin Token')
+        token = user.personal_access_tokens.create(
+          name: 'Ansible Admin Token',
+          scopes: ['api'],
+          expires_at: 1.year.from_now
+        );
+        token.set_token('{{ gitlab_admin_token }}');
+        token.save!
+      end
+    "
+- name: Define the gitlab_admin_token variable.
+  ansible.builtin.set_fact:
+    gitlab_admin_token: '{{ gitlab_admin_token }}'
 
 - name: Deploy gitlab.rb configuration file
   ansible.builtin.template:

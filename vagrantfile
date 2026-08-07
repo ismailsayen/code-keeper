@@ -1,6 +1,6 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
-
+MACHINE_IP = "192.168.56.11"
 Vagrant.configure("2") do |config|
   # Prevents 'vagrant destroy' from executing without explicit confirmation
   # config.vm.define "code-keeper-server" do |server|
@@ -9,6 +9,7 @@ Vagrant.configure("2") do |config|
 
   config.vm.box = "ubuntu/jammy64"
   config.vm.hostname = "code-keeper-server"
+  config.vm.network "private_network", ip: MACHINE_IP
 
   # 50GB storage for GitLab
   config.vm.disk :disk, size: "50GB", name: "gitlab_storage"

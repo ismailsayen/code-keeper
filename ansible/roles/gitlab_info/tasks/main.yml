@@ -3,14 +3,8 @@
 - name: Vm IP Address
   ansible.builtin.debug:
     msg: "VM IP Address: {{ ansible_default_ipv4.address }}"
-    
-- name: Retrieve initial root password
-  ansible.builtin.slurp:
-    src: /etc/gitlab/initial_root_password
-  register: root_password_file
-  ignore_errors: true
 
-- name: Display initial root password
+- name: Display the gitlab_admin_token variable.
   ansible.builtin.debug:
-    msg: "{{ root_password_file.content | b64decode | regex_search('Password: (.*)', '\\1') | first }}"
-  when: root_password_file is not failed
+    msg: "GitLab Admin Token: {{ gitlab_admin_token }}"
+

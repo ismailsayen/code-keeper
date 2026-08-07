@@ -1,0 +1,22 @@
+---
+# tasks file for ansible/roles/commons
+- name: Install required dependencies
+  ansible.builtin.apt:
+    name:
+      - curl
+      - openssh-server
+      - ca-certificates
+      - tzdata
+      - postfix
+    state: present
+    update_cache: yes
+
+- name: Allow HTTP, HTTPS, and SSH traffic with UFW
+  community.general.ufw:
+    rule: allow
+    port: "{{ item }}"
+    proto: tcp
+  loop:
+    - "80"
+    - "443"
+    - "22"

@@ -1,0 +1,3 @@
+gitlab_root_password: "your_password_here"
+
+gitlab_admin_token: "glpat-your_token_here"

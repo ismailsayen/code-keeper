@@ -3,7 +3,8 @@
   hosts: all
   become: true
   roles:
-    - role: gitlab_install
+    - role: commons
+    - role: gitlab
 
 - name: Get GitLab Credentials
   hosts: all
