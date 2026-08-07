@@ -7,7 +7,7 @@ IMAGE_NAME ?= code-keeper-toolbox
 CONTAINER_NAME ?= code-keeper-toolbox
 
 
-.PHONY: init build start stop  ping check provision  clean
+.PHONY: init build start stop  ping provision  clean
 
 init:
 	@chmod +x scripts/install_docker_rootless.sh
@@ -28,6 +28,7 @@ start:
 		docker run -d \
 			--name "$(CONTAINER_NAME)" \
 			--env-file .env \
+			-p $(TAILSCALE_PROXY):$(PROXY_PORT) \
 			-v "$(PWD):/workspace" \
 			-w /workspace \
 			"$(IMAGE_NAME)"; \
@@ -50,22 +51,17 @@ ssh:
 
 ping:
 	@echo "==> Testing remote Ansible connectivity..."
-	@ansible all -m ping \
-		--vault-password-file=.vault_pass
-
-check:
-	@echo "==> Running Ansible check mode..."
-	@ansible-playbook \
-		ansible/playbook.yml \
-		--vault-password-file=.vault_pass \
-		--check
+	@ansible all -m ping --vault-password-file=.vault_pass
 
 
 provision:
 	@echo "==> Provisioning remote VM..."
-	@ansible-playbook \
-		ansible/playbook.yml \
-		--vault-password-file=.vault_pass
+	@ansible-playbook ansible/playbook.yml --vault-password-file=.vault_pass
+
+gitlab:
+	@chmod +x scripts/open-gitlab.sh
+	@./scripts/open-gitlab.sh
+
 
 clean:
 

@@ -8,7 +8,7 @@ mkdir -p /var/lib/tailscale
 
 tailscaled \
     --tun=userspace-networking \
-    --socks5-server=127.0.0.1:1055 \
+    --socks5-server=0.0.0.0:1055 \
     --state=/var/lib/tailscale/tailscaled.state \
     >/tmp/tailscaled.log 2>&1 &
 
