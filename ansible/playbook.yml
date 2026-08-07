@@ -6,9 +6,6 @@
     - role: commons
     - role: gitlab
     - role: gitlab_users
+    - role: docker
+    - role: tailscale
 
-- name: Get GitLab Credentials
-  hosts: all
-  become: true
-  roles:
-    - role: gitlab_info
