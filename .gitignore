@@ -5,3 +5,4 @@ gitlab_root_password
 .private_key
 .tailscale_key
 .vault_pass
+.env
