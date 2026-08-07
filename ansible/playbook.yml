@@ -5,6 +5,7 @@
   roles:
     - role: commons
     - role: gitlab
+    - role: gitlab_users
 
 - name: Get GitLab Credentials
   hosts: all

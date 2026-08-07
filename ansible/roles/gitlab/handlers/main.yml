@@ -1,5 +1,3 @@
 ---
-# handlers file for /vagrant/ansible/roles/gitlab
-- name: Reconfigure GitLab
-  ansible.builtin.command:
-    cmd: gitlab-ctl reconfigure
+# handlers file for /ansible/roles/gitlab
+

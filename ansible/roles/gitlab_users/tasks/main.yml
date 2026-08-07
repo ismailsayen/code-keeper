@@ -1,0 +1,18 @@
+---
+# tasks file for ansible/roles/gitlab-users
+
+- name: Create or update GitLab users
+  community.general.gitlab_user:
+    api_url: "{{ gitlab_url }}"
+    api_token: "{{ gitlab_admin_token }}"
+    validate_certs: "{{ gitlab_validate_certs }}"
+    username: "{{ item.username }}"
+    name: "{{ item.name }}"
+    email: "{{ item.email }}"
+    password: "{{ item.password }}"
+    isadmin: "{{ item.is_admin | default(false) }}"
+    state: present
+    confirm: false                 
+    reset_password: false          
+  loop: "{{ gitlab_users_list }}"
+  no_log: true                    

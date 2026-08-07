@@ -1,0 +1,4 @@
+---
+# defaults file for ansible/roles/gitlab-users
+
+gitlab_url: "http://192.168.56.11"

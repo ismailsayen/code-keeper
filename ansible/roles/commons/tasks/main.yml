@@ -8,6 +8,8 @@
       - ca-certificates
       - tzdata
       - postfix
+      - python3-pip
+      - python3-gitlab
     state: present
     update_cache: yes
 

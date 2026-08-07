@@ -18,7 +18,19 @@
     state: present
     update_cache: yes
 
-- name: Generate the token only if it does not already exist.
+- name: Deploy gitlab.rb configuration file
+  ansible.builtin.template:
+    src: gitlab.rb.j2
+    dest: /etc/gitlab/gitlab.rb
+    mode: '0600'
+
+- name: Run gitlab-ctl reconfigure to initialize GitLab services
+  ansible.builtin.command:
+    cmd: gitlab-ctl reconfigure
+  register: gitlab_reconfigure
+  changed_when: "'gitlab Reconfigured!' in gitlab_reconfigure.stdout"
+
+- name: Generate the token only if it does not already exist
   ansible.builtin.command: >
     gitlab-rails runner "
       user = User.find_by(username: 'root');
@@ -32,14 +44,4 @@
         token.save!
       end
     "
-- name: Define the gitlab_admin_token variable.
-  ansible.builtin.set_fact:
-    gitlab_admin_token: '{{ gitlab_admin_token }}'
-
-- name: Deploy gitlab.rb configuration file
-  ansible.builtin.template:
-    src: gitlab.rb.j2
-    dest: /etc/gitlab/gitlab.rb
-    mode: '0600'
-  notify: Reconfigure GitLab
-  
+  changed_when: false

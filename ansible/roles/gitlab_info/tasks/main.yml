@@ -3,8 +3,3 @@
 - name: Vm IP Address
   ansible.builtin.debug:
     msg: "VM IP Address: {{ ansible_default_ipv4.address }}"
-
-- name: Display the gitlab_admin_token variable.
-  ansible.builtin.debug:
-    msg: "GitLab Admin Token: {{ gitlab_admin_token }}"
-
