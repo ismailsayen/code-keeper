@@ -7,9 +7,7 @@ IMAGE_NAME ?= code-keeper-toolbox
 CONTAINER_NAME ?= code-keeper-toolbox
 
 
-.PHONY: help \
-	init build start stop \
-	tailscale ping check provision  clean
+.PHONY: init build start stop  ping check provision  clean
 
 init:
 	@chmod +x scripts/install_docker_rootless.sh
