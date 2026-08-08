@@ -1,0 +1,5 @@
+---
+# tasks file for /vagrant/ansible/roles/gitlab-info
+- name: Vm IP Address
+  ansible.builtin.debug:
+    msg: "VM IP Address: {{ ansible_default_ipv4.address }}"

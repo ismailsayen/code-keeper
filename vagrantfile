@@ -1,12 +1,12 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
-
-VM_PRIVATE_IP = "192.168.56.10"
+MACHINE_IP = "192.168.56.11"
 
 Vagrant.configure("2") do |config|
 
   config.vm.box = "ubuntu/jammy64"
   config.vm.hostname = "code-keeper-server"
+  config.vm.network "private_network", ip: MACHINE_IP
 
   # 50GB storage for GitLab
   config.vm.disk :disk, size: "50GB", name: "gitlab_storage"
@@ -15,8 +15,6 @@ Vagrant.configure("2") do |config|
   config.vm.network "forwarded_port", guest: 22, host: 2222, id: "ssh", auto_correct: true
   config.vm.network "forwarded_port", guest: 80, host: 8080
 
-  # Private Network
-  config.vm.network "private_network", ip: VM_PRIVATE_IP
 
   config.vm.provider "virtualbox" do |vb|
     vb.name   = "Code-Keeper-VM"
@@ -24,11 +22,4 @@ Vagrant.configure("2") do |config|
     vb.cpus   = 4
   end
 
-  config.vm.provision "ansible_local" do |ansible|
-    ansible.playbook = "ansible/playbook.yml"
-    ansible.extra_vars = {}
-    ansible.raw_arguments = [
-      "--vault-password-file=/vagrant/.vault_pass"
-    ]
-  end
 end

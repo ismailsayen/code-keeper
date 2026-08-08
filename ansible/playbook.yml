@@ -1,13 +1,10 @@
 ---
-- name: Deploy GitLab Infrastructure
+- name: Install GitLab
   hosts: all
   become: true
-
   roles:
-    - common
-    - gitlab
-    - tailscale
-    - firewall
-    - docker
-    - gitlab_runner
-    - SonarQube
+    - role: common
+    - role: gitlab
+    - role: gitlab_users
+    - role: docker
+    - role: tailscale

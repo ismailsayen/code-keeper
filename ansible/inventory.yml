@@ -1,0 +1,11 @@
+all:
+  children:
+    code_keeper:
+      hosts:
+        code-keeper-server:
+          ansible_host: "{{ lookup('env', 'CODE_KEEPER_HOST') }}"
+          ansible_user: "{{ lookup('env', 'CODE_KEEPER_USER') }}"
+          ansible_port: "{{ lookup('env', 'CODE_KEEPER_SSH_PORT') }}"
+          ansible_ssh_private_key_file: "/workspace/{{ lookup('env', 'SSH_KEY') }}"
+          ansible_ssh_common_args: >-
+            -o ProxyCommand="nc -X 5 -x {{ lookup('env', 'TAILSCALE_PROXY') }} %h %p"

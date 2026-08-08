@@ -1,13 +1,47 @@
 ---
-- name: Add GitLab repository
-  shell: |
-    curl -fsSL https://packages.gitlab.com/install/repositories/gitlab/gitlab-ce/script.deb.sh | bash
-  args:
+# tasks file for /ansible/roles/gitlab
+
+- name: Download GitLab repository installation script
+  ansible.builtin.get_url:
+    url: https://packages.gitlab.com/install/repositories/gitlab/gitlab-ce/script.deb.sh
+    dest: /tmp/gitlab_repo_script.sh
+    mode: "0755"
+
+- name: Execute GitLab repository script
+  ansible.builtin.command:
+    cmd: /tmp/gitlab_repo_script.sh
     creates: /etc/apt/sources.list.d/gitlab_gitlab-ce.list
 
-- name: Install GitLab CE
-  apt:
+- name: Install GitLab CE package
+  ansible.builtin.apt:
     name: gitlab-ce
     state: present
-  environment:
-    EXTERNAL_URL: "{{ gitlab_external_url }}"
+    update_cache: yes
+
+- name: Deploy gitlab.rb configuration file
+  ansible.builtin.template:
+    src: gitlab.rb.j2
+    dest: /etc/gitlab/gitlab.rb
+    mode: '0600'
+
+- name: Run gitlab-ctl reconfigure to initialize GitLab services
+  ansible.builtin.command:
+    cmd: gitlab-ctl reconfigure
+  register: gitlab_reconfigure
+  changed_when: "'gitlab Reconfigured!' in gitlab_reconfigure.stdout"
+
+- name: Generate the token only if it does not already exist
+  ansible.builtin.command: >
+    gitlab-rails runner "
+      user = User.find_by(username: 'root');
+      unless user.personal_access_tokens.exists?(name: 'Ansible Admin Token')
+        token = user.personal_access_tokens.create(
+          name: 'Ansible Admin Token',
+          scopes: ['api'],
+          expires_at: 1.year.from_now
+        );
+        token.set_token('{{ gitlab_admin_token }}');
+        token.save!
+      end
+    "
+  changed_when: false
